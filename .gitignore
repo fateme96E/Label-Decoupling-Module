@@ -18,3 +18,7 @@ outputs_*/
 # IDE
 .vscode/
 .idea/
+
+# Local checks
+check/
+check_env.py
