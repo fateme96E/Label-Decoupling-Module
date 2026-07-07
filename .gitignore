@@ -1,0 +1,20 @@
+
+# Python
+__pycache__/
+*.pyc
+
+# Environment
+.env
+.venv/
+conda_env/
+
+# Data
+data/
+
+# Outputs
+outputs/
+outputs_*/
+
+# IDE
+.vscode/
+.idea/
