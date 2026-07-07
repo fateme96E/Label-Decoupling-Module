@@ -335,16 +335,19 @@ def apply_standardizer(X, ss):
 
 # DOCUMENTATION STUFF
 
-def generate_ptbxl_summary_table(selection=None, folder='../output/'):
+def generate_ptbxl_summary_table(selection=None, folder='../outputs/'):
 
-    exps = ['exp0', 'exp1', 'exp1.1', 'exp1.1.1', 'exp2', 'exp3']
+    # exps = ['exp0', 'exp1', 'exp1.1', 'exp1.1.1', 'exp2', 'exp3']
+    exps = os.listdir(folder)
+    exps = [e for e in exps if e.startswith("exp")]
     metric1 = 'macro_auc'
 
     # get models
     models = {}
     for i, exp in enumerate(exps):
         if selection is None:
-            exp_models = [m.split('/')[-1] for m in glob.glob(folder+str(exp)+'/models/*')]
+            # exp_models = [m.split('/')[-1] for m in glob.glob(folder+str(exp)+'/models/*')]
+            exp_models = [os.path.basename(m) for m in glob.glob(folder+str(exp)+'/models/*')]
         else:
             exp_models = selection
         if i == 0:
@@ -352,14 +355,19 @@ def generate_ptbxl_summary_table(selection=None, folder='../output/'):
         else:
             models = models.union(set(exp_models))
 
-    results_dic = {'Method':[], 
-                'exp0_AUC':[], 
-                'exp1_AUC':[], 
-                'exp1.1_AUC':[], 
-                'exp1.1.1_AUC':[], 
-                'exp2_AUC':[],
-                'exp3_AUC':[]
-                }
+    # results_dic = {'Method':[], 
+    #             'exp0_AUC':[], 
+    #             'exp1_AUC':[], 
+    #             'exp1.1_AUC':[], 
+    #             'exp1.1.1_AUC':[], 
+    #             'exp2_AUC':[],
+    #             'exp3_AUC':[]
+    #             }
+
+    results_dic = {'Method': []}
+    for e in exps:
+        results_dic[e + '_AUC'] = []
+
 
     for m in models:
         results_dic['Method'].append(m)
@@ -367,8 +375,8 @@ def generate_ptbxl_summary_table(selection=None, folder='../output/'):
         for e in exps:
             
             try:
-                me_res = pd.read_csv(folder+str(e)+'/models/'+str(m)+'/results/te_results.csv', index_col=0)
-    
+                me_res = pd.read_csv(folder+str(e)+'/models/'+str(m)+'/results/val_result.csv', index_col=0)
+                # path = os.path.join(folder, e, 'models', m, 'results', 'result.csv')                
                 mean1 = me_res.loc['point'][metric1]
                 unc1 = max(me_res.loc['upper'][metric1]-me_res.loc['point'][metric1], me_res.loc['point'][metric1]-me_res.loc['lower'][metric1])
 
@@ -382,8 +390,7 @@ def generate_ptbxl_summary_table(selection=None, folder='../output/'):
     df_index = df[df.Method.isin(['naive', 'ensemble'])]
     df_rest = df[~df.Method.isin(['naive', 'ensemble'])]
     df = pd.concat([df_rest, df_index])
-    df.to_csv(folder+'results_ptbxl.csv')
-
+    df.to_csv(folder+'results_ptbxl.csv')   
     titles = [
         '### 1. PTB-XL: all statements',
         '### 2. PTB-XL: diagnostic statements',
@@ -394,18 +401,19 @@ def generate_ptbxl_summary_table(selection=None, folder='../output/'):
     ]
 
     # helper output function for markdown tables
-    our_work = 'https://arxiv.org/abs/2004.13701'
-    our_repo = 'https://github.com/helme/ecg_ptbxl_benchmarking/'
+    # our_work = 'https://arxiv.org/abs/2004.13701'
+    # our_repo = 'https://github.com/helme/ecg_ptbxl_benchmarking/'
     md_source = ''
     for i, e in enumerate(exps):
         md_source += '\n '+titles[i]+' \n \n'
         md_source += '| Model | AUC &darr; | paper/source | code_used | \n'
         md_source += '|---:|:---|:---|:---| \n'
         for row in df_rest[['Method', e+'_AUC']].sort_values(e+'_AUC', ascending=False).values:
-            md_source += '| ' + row[0].replace('fastai_', '') + ' | ' + row[1] + ' | [our work]('+our_work+') | [this repo]('+our_repo+')| \n'
+            # md_source += '| ' + row[0].replace('fastai_', '') + ' | ' + row[1] + ' | [our work]('+our_work+') | [this repo]('+our_repo+')| \n'
+            md_source += '| ' + row[0].replace('fastai_', '') + ' | ' + row[1] + '\n'
     print(md_source)
 
-def ICBEBE_table(selection=None, folder='../output/'):
+def ICBEBE_table(selection=None, folder='../outputs/'):
     cols = ['macro_auc', 'F_beta_macro', 'G_beta_macro']
 
     if selection is None:
@@ -418,7 +426,7 @@ def ICBEBE_table(selection=None, folder='../output/'):
 
     data = []
     for model in models:
-        me_res = pd.read_csv(folder+'exp_ICBEB/models/'+model+'/results/te_results.csv', index_col=0)
+        me_res = pd.read_csv(folder+'exp_ICBEB/models/'+model+'/results/result.csv', index_col=0)
         mcol=[]
         for col in cols:
             mean = me_res.ix['point'][col]

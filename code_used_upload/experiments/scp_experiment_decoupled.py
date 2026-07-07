@@ -27,8 +27,8 @@ class SCP_Experiment():
         # create folder structure if needed
         if not os.path.exists(self.outputfolder+self.experiment_name):
             os.makedirs(self.outputfolder+self.experiment_name)
-            if not os.path.exists(self.outputfolder+self.experiment_name+'/results/'):
-                os.makedirs(self.outputfolder+self.experiment_name+'/results/')
+            # if not os.path.exists(self.outputfolder+self.experiment_name+'/results/'):
+            #     os.makedirs(self.outputfolder+self.experiment_name+'/results/')
             if not os.path.exists(outputfolder+self.experiment_name+'/models/'):
                 os.makedirs(self.outputfolder+self.experiment_name+'/models/')
             if not os.path.exists(outputfolder+self.experiment_name+'/data/'):
@@ -135,26 +135,27 @@ class SCP_Experiment():
 
         # get labels
         y_train = np.load(self.outputfolder+self.experiment_name+'/data/y_train.npy', allow_pickle=True)
-        #y_val = np.load(self.outputfolder+self.experiment_name+'/data/y_val.npy', allow_pickle=True)
-        y_test = np.load(self.outputfolder+self.experiment_name+'/data/y_test.npy', allow_pickle=True)
+        y_val = np.load(self.outputfolder+self.experiment_name+'/data/y_val.npy', allow_pickle=True)
+        # y_test = np.load(self.outputfolder+self.experiment_name+'/data/y_test.npy', allow_pickle=True)
 
         # if bootstrapping then generate appropriate samples for each
         if bootstrap_eval:
             if not dumped_bootstraps:
                 #train_samples = np.array(utils.get_appropriate_bootstrap_samples(y_train, n_bootstraping_samples))
-                test_samples = np.array(utils.get_appropriate_bootstrap_samples(y_test, n_bootstraping_samples))
-                #val_samples = np.array(utils.get_appropriate_bootstrap_samples(y_val, n_bootstraping_samples))
+                # test_samples = np.array(utils.get_appropriate_bootstrap_samples(y_test, n_bootstraping_samples))
+                val_samples = np.array(utils.get_appropriate_bootstrap_samples(y_val, n_bootstraping_samples))
             else:
-                test_samples = np.load(self.outputfolder+self.experiment_name+'/test_bootstrap_ids.npy', allow_pickle=True)
+                # test_samples = np.load(self.outputfolder+self.experiment_name+'/test_bootstrap_ids.npy', allow_pickle=True)
+                val_samples = np.load(self.outputfolder+self.experiment_name+'/val_bootstrap_ids.npy', allow_pickle=True)
         else:
             #train_samples = np.array([range(len(y_train))])
-            test_samples = np.array([range(len(y_test))])
-            #val_samples = np.array([range(len(y_val))])
+            # test_samples = np.array([range(len(y_test))])
+            val_samples = np.array([range(len(y_val))])
 
         # store samples for future evaluations
         #train_samples.dump(self.outputfolder+self.experiment_name+'/train_bootstrap_ids.npy')
-        test_samples.dump(self.outputfolder+self.experiment_name+'/test_bootstrap_ids.npy')
-        #val_samples.dump(self.outputfolder+self.experiment_name+'/val_bootstrap_ids.npy')
+        # test_samples.dump(self.outputfolder+self.experiment_name+'/test_bootstrap_ids.npy')
+        val_samples.dump(self.outputfolder+self.experiment_name+'/val_bootstrap_ids.npy')
 
         # iterate over all models fitted so far
         for m in sorted(os.listdir(self.outputfolder+self.experiment_name+'/models')):
@@ -164,8 +165,8 @@ class SCP_Experiment():
 
             # load predictions
             y_train_pred = np.load(mpath+'y_train_pred.npy', allow_pickle=True)
-            #y_val_pred = np.load(mpath+'y_val_pred.npy', allow_pickle=True)
-            y_test_pred = np.load(mpath+'y_test_pred.npy', allow_pickle=True)
+            y_val_pred = np.load(mpath+'y_val_pred.npy', allow_pickle=True)
+            # y_test_pred = np.load(mpath+'y_test_pred.npy', allow_pickle=True)
 
             if self.experiment_name == 'exp_ICBEB':
                 # compute classwise thresholds such that recall-focused Gbeta is optimized
@@ -175,8 +176,10 @@ class SCP_Experiment():
 
             pool = multiprocessing.Pool(n_jobs)
 
-            te_df = pd.concat(pool.starmap(utils.generate_results, zip(test_samples, repeat(y_test), repeat(y_test_pred), repeat(thresholds))))
-            te_df_point = utils.generate_results(range(len(y_test)), y_test, y_test_pred, thresholds)
+            # te_df = pd.concat(pool.starmap(utils.generate_results, zip(test_samples, repeat(y_test), repeat(y_test_pred), repeat(thresholds))))
+            te_df = pd.concat(pool.starmap(utils.generate_results, zip(val_samples, repeat(y_val), repeat(y_val_pred), repeat(thresholds))))
+            te_df_point = utils.generate_results(range(len(y_val)), y_val, y_val_pred, thresholds)
+            # te_df_point = utils.generate_results(range(len(y_test)), y_test, y_test_pred, thresholds)
             te_df_result = pd.DataFrame(
                 np.array([
                     te_df_point.mean().values, 

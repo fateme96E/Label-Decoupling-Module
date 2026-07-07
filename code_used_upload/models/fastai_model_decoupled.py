@@ -21,6 +21,7 @@ import math
 
 from models.base_model import ClassificationModel
 import torch 
+import torch.nn.functional as F
 
 #for lrfind
 import matplotlib
@@ -342,7 +343,7 @@ class fastai_model(ClassificationModel):
 
         if pretrained == True:
             if(pretrainedfolder is None):
-                pretrainedfolder = Path('../output/exp0/models/'+name.split("_pretrained")[0]+'/')
+                pretrainedfolder = Path('../outputs/exp0/models/'+name.split("_pretrained")[0]+'/')
             if(n_classes_pretrained is None):
                 n_classes_pretrained = 71
   

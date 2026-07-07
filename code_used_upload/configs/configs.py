@@ -66,6 +66,9 @@ conf_fastai_xresnet1d101_base = {'modelname':'fastai_xresnet1d101_base', 'modelt
 conf_decoupled_fastai_xresnet1d101 = {'modelname':'decoupled_fastai_xresnet1d101', 'modeltype':'fastai_model',
     'parameters':dict(loss="decoupled_triplet", lin_ftrs_head=[128], div_lin_ftrs_head=[8], alpha=1., beta=0.0, gamma=0.1, margin=2.)}
 
+conf_decoupled_fastai_xresnet1d101_no_metric = {'modelname':'decoupled_fastai_xresnet1d101_no_metric', 'modeltype':'fastai_model',
+    'parameters':dict(loss="decoupled_triplet", lin_ftrs_head=[128], div_lin_ftrs_head=[8], alpha=1., beta=0.0, gamma=0.0, margin=2.)}
+
 conf_fastai_xresnet1d152 = {'modelname':'fastai_xresnet1d152', 'modeltype':'fastai_model', 
     'parameters':dict()}
 
